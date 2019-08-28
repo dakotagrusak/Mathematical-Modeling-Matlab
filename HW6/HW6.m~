@@ -1,0 +1,90 @@
+%% HW6 
+% % Constrained Multivariable Optimization (Lagrange Multiplier)
+% 
+% Dakota Grusak
+% 
+% A PC manufacturer currently sells 10,000 units/ month of a certain model.
+% The manufacturing cost is $ 700/ unit. The whole sale price is $950/ 
+% unit. In a few test markets, the price was discounted by $100, with 
+% result of 50% sales increase. The advertising cost at present are 
+% $50,000/ month. Research by the ad agency shows an increase of 
+% advertising budget by $10,000 would increase sales by 200/month. 
+% (The company will not increase budget above $100,000).
+clc; close all; clear all; 
+
+%% 
+% % Known: 
+% D = units of discount ($100/unit) 
+% a = 50% increase in sales a = $50, 000/ month - advertising 
+% b - ad budget increase = b · $10, 000 
+
+% % Find: 
+% Maximize profit P
+
+% % Assume: 
+%  N = total number of units sold 
+%     N = n*(1+D(0.5)) + 200*b
+
+%% (A) Determine the price and the advertising budget that will maximize profit
+
+syms n r D b lam
+P = (10000*(1+0.5*D)+200*b)  *  (250-D*100)  -  b*10000  -  50000;
+G = b; 
+
+dP = gradient(P, [D,b])
+dG = gradient(G, [D,b]);
+
+[bcrit,Dcrit,lam] = solve([dP(1)==lam*dG(1), dP(2)==lam*dG(2), G==10],[b,D,lam])
+
+maxP = subs(P,[D,b],[Dcrit,bcrit])
+
+
+%% (B) 
+syms a
+Pa = (10000*(1+a*D)+200*b)  *  (250-D*100)  -  b*10000  -  50000;
+
+dP = gradient(Pa, [D,b])
+dG = gradient(G, [D,b]);
+
+% [bcrit,Dcrit,lam] = solve([dP(1)==lam*dG(1),dP(2)==lam*dG(2),G==10],[b,D,lam])
+
+a0 = 0.5; 
+dPada = diff(Pa,a);
+
+S_Pa_a = double(subs(dPada,Dcrit) * a0/maxP)
+% S_P_D = double(subs(dPda,Dcrit) * a0/Dcrit)
+
+%% (C)
+
+S_P_b = double(subs(dP(2),Dcrit) * 10000/maxP)
+% S_D_b
+
+%% (D)
+% The value of the multiplier is lamda = 39,000. The real world significance of this value is that
+% for every 1-unit increase in b, the advertising budget, the maximum possible profit will increase 
+% by lambda or $39,000. You can inform managment of this possible icnrease in revenue and they will
+% be happy. 
+
+
+%% (E)
+figure
+axes('Fontsize',18)
+hold all
+
+%added for christmas
+fcontour(P, [-1e6 5e6], 'EdgeColor', 'on')
+
+fcontour(P, [-1e6 5e6], 'Fill', 'on')
+colorbar
+fimplicit(G,'--r')
+fimplicit(P - maxP,[-1e6 5e6],'--k')
+plot(bcrit, Dcrit,'ko','MarkerFaceColor','k')
+xlabel('b value')
+ylabel('D value')
+% plot(a,b, 'kx','LineWidth', 3)
+
+
+
+%% (F)
+
+% The matlab function "linprog" cannot be used for this model becuase the function is non-linear
